@@ -3,6 +3,7 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Link from "next/link";
 import WalletManager from "@/components/wallet/WalletManager";
 
 export default function Dashboard() {
@@ -31,10 +32,16 @@ export default function Dashboard() {
             <div className="flex items-center">
               <h1 className="text-xl font-bold text-black">Terminal App</h1>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/swap"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Token Swap
+              </Link>
               <button
                 onClick={logout}
-                className="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Sign Out
               </button>
@@ -64,7 +71,14 @@ export default function Dashboard() {
                     Connect your wallet to interact with blockchain networks
                   </li>
                   <li>View your transaction history and portfolio</li>
-                  <li>Explore available markets and trading options</li>
+                  <li>
+                    <Link
+                      href="/swap"
+                      className="text-indigo-600 hover:text-indigo-800"
+                    >
+                      Swap tokens across different chains
+                    </Link>
+                  </li>
                 </ul>
               </div>
             </div>

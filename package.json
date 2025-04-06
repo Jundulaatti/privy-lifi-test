@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@lifi/sdk": "^3.6.6",
     "@privy-io/react-auth": "^2.8.2",
+    "ethers": "^6.13.5",
     "next": "14.2.22",
     "react": "^18",
     "react-dom": "^18"

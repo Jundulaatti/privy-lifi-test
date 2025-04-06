@@ -1,6 +1,8 @@
 "use client";
 
 import { PrivyProvider } from "@privy-io/react-auth";
+import { LiFiProvider } from "./providers/LiFiProvider";
+import LiFiInitializer from "./components/LiFiInitializer";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // Ensure the app ID is always available for debugging
@@ -15,14 +17,17 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         appearance: {
           theme: "light",
           accentColor: "#676FFF",
-          showWalletLoginFirst: false,
+          showWalletLoginFirst: true,
         },
         embeddedWallets: {
           createOnLogin: "users-without-wallets",
         },
       }}
     >
-      {children}
+      <LiFiProvider>
+        <LiFiInitializer />
+        {children}
+      </LiFiProvider>
     </PrivyProvider>
   );
 }
