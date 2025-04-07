@@ -42,7 +42,7 @@ export default function WalletManager() {
                 key={wallet.address}
                 className="flex flex-col border rounded-lg p-3"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col items-center justify-between">
                   <div>
                     <p className="font-medium text-black">
                       {wallet.walletClientType === "metamask"

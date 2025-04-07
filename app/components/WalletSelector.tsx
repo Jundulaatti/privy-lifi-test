@@ -1,11 +1,20 @@
 "use client";
 
 import { useWallets } from "@privy-io/react-auth";
-import { useLiFiWallet } from "../hooks/useLiFiWallet";
+import { useLiFi } from "../providers/LiFiProvider";
 
 export default function WalletSelector() {
   const { wallets } = useWallets();
-  const { selectedWallet, selectWallet, isWalletConfigured } = useLiFiWallet();
+  const { selectedWallet, selectWallet, isWalletConfigured } = useLiFi();
+
+  // Log wallet state for debugging
+  console.log("DEBUG - WalletSelector states:", {
+    selectedWallet,
+    isWalletConfigured,
+    availableWallets: wallets.length,
+    walletTypes: wallets.map((w) => w.walletClientType),
+    usingContextHook: "useLiFi",
+  });
 
   // Filter for Privy and MetaMask wallets
   const privyWallet = wallets.find((w) => w.walletClientType === "privy");

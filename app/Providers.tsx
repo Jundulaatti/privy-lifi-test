@@ -3,6 +3,7 @@
 import { PrivyProvider } from "@privy-io/react-auth";
 import { LiFiProvider } from "./providers/LiFiProvider";
 import LiFiInitializer from "./components/LiFiInitializer";
+import { Toaster } from "react-hot-toast";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // Ensure the app ID is always available for debugging
@@ -27,6 +28,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <LiFiProvider>
         <LiFiInitializer />
         {children}
+        <Toaster position="top-right" />
       </LiFiProvider>
     </PrivyProvider>
   );
