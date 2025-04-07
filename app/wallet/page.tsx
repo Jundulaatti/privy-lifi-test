@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import WalletSelector from "../components/WalletSelector";
 import WalletBalance from "../components/WalletBalance";
+import ExportPrivateKeyButton from "../components/ExportPrivateKeyButton";
 
 export default function WalletPage() {
   const { wallets, ready } = useWallets();
@@ -62,6 +63,9 @@ export default function WalletPage() {
                     <div className="text-sm px-2 py-1 bg-green-100 text-green-800 rounded">
                       Connected
                     </div>
+                    {wallet.walletClientType === "privy" && (
+                      <ExportPrivateKeyButton address={wallet.address} />
+                    )}
                     <button className="text-blue-600">
                       {expandedWallet === wallet.address ? "▲" : "▼"}
                     </button>

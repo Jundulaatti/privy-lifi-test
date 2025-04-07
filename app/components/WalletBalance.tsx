@@ -1,51 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { formatEther } from "ethers";
-
-interface Network {
-  name: string;
-  chainId: number;
-  rpcUrl: string;
-  currency: string;
-  explorer: string;
-}
-
-const NETWORKS: Network[] = [
-  {
-    name: "Ethereum",
-    chainId: 1,
-    rpcUrl: "https://eth.llamarpc.com",
-    currency: "ETH",
-    explorer: "https://etherscan.io",
-  },
-  {
-    name: "Base",
-    chainId: 8453,
-    rpcUrl: "https://base.llamarpc.com",
-    currency: "ETH",
-    explorer: "https://basescan.org",
-  },
-  {
-    name: "Optimism",
-    chainId: 10,
-    rpcUrl: "https://optimism.llamarpc.com",
-    currency: "ETH",
-    explorer: "https://optimistic.etherscan.io",
-  },
-  {
-    name: "Arbitrum One",
-    chainId: 42161,
-    rpcUrl: "https://arbitrum.llamarpc.com",
-    currency: "ETH",
-    explorer: "https://arbiscan.io",
-  },
-];
+import { useEffect, useState } from "react";
+import { NETWORKS } from "../constants/networks";
+import { COMMON_TOKENS, TokenBalance } from "../constants/tokens";
+import {
+  fetchNativeBalance,
+  fetchTokenBalances,
+} from "../lib/blockchain/balances";
+import NetworkTabs from "./NetworkTabs";
+import NativeBalance from "./NativeBalance";
+import TokenBalanceList from "./TokenBalanceList";
 
 export default function WalletBalance({ address }: { address: string }) {
-  const [balances, setBalances] = useState<{ [key: string]: string }>({});
+  const [nativeBalances, setNativeBalances] = useState<{
+    [key: string]: string;
+  }>({});
+  const [tokenBalances, setTokenBalances] = useState<{
+    [key: string]: TokenBalance[];
+  }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("Ethereum");
 
   useEffect(() => {
     const fetchBalances = async () => {
@@ -54,42 +29,44 @@ export default function WalletBalance({ address }: { address: string }) {
       setIsLoading(true);
       setError(null);
 
-      const results: { [key: string]: string } = {};
+      const nativeResults: { [key: string]: string } = {};
+      const tokenResults: { [key: string]: TokenBalance[] } = {};
 
       try {
-        // Use Promise.all to fetch balances in parallel
+        // Fetch balances for all networks in parallel
         await Promise.all(
           NETWORKS.map(async (network) => {
             try {
-              const response = await fetch(network.rpcUrl, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  jsonrpc: "2.0",
-                  id: 1,
-                  method: "eth_getBalance",
-                  params: [address, "latest"],
-                }),
-              });
+              // Fetch native balance
+              nativeResults[network.name] = await fetchNativeBalance(
+                address,
+                network
+              );
 
-              const data = await response.json();
-              if (data.result) {
-                // Format the balance from wei to ether
-                const balanceInEther = formatEther(data.result);
-                results[network.name] = balanceInEther;
+              // Fetch token balances for this network
+              const tokensForChain = COMMON_TOKENS[network.chainId] || [];
+              if (tokensForChain.length > 0) {
+                tokenResults[network.name] = await fetchTokenBalances(
+                  address,
+                  network,
+                  tokensForChain
+                );
               } else {
-                results[network.name] = "Error";
+                tokenResults[network.name] = [];
               }
             } catch (err) {
-              console.error(`Error fetching balance for ${network.name}:`, err);
-              results[network.name] = "Error";
+              console.error(
+                `Error fetching balances for ${network.name}:`,
+                err
+              );
+              nativeResults[network.name] = "0";
+              tokenResults[network.name] = [];
             }
           })
         );
 
-        setBalances(results);
+        setNativeBalances(nativeResults);
+        setTokenBalances(tokenResults);
       } catch (err) {
         console.error("Failed to fetch balances:", err);
         setError("Failed to fetch balances. Please try again later.");
@@ -118,39 +95,36 @@ export default function WalletBalance({ address }: { address: string }) {
     );
   }
 
+  // Find the active network
+  const activeNetwork = NETWORKS.find((network) => network.name === activeTab);
+  if (!activeNetwork) return null;
+
   return (
-    <div className="p-4 border rounded-lg">
+    <div className="p-4">
       <h3 className="text-lg font-medium mb-3">Wallet Balances</h3>
-      <div className="space-y-2">
-        {NETWORKS.map((network) => (
-          <div
-            key={network.chainId}
-            className="flex justify-between items-center p-3 border rounded-md hover:bg-gray-50"
-          >
-            <div>
-              <p className="font-medium">{network.name}</p>
-              <a
-                href={`${network.explorer}/address/${address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-blue-600 hover:underline"
-              >
-                View on explorer
-              </a>
-            </div>
-            <div className="flex flex-col items-end">
-              <p className="font-mono">
-                {balances[network.name]
-                  ? parseFloat(balances[network.name]).toFixed(6)
-                  : "0.000000"}{" "}
-                {network.currency}
-              </p>
-              {parseFloat(balances[network.name] || "0") > 0 && (
-                <span className="text-xs text-green-600">Available</span>
-              )}
-            </div>
-          </div>
-        ))}
+
+      {/* Network tabs */}
+      <NetworkTabs
+        networks={NETWORKS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+
+      {/* Active network content */}
+      <div className="space-y-4">
+        {/* Native balance for active network */}
+        <NativeBalance
+          network={activeNetwork}
+          address={address}
+          balance={nativeBalances[activeNetwork.name] || "0"}
+        />
+
+        {/* Token balances for active network */}
+        <TokenBalanceList
+          tokenBalances={tokenBalances[activeNetwork.name] || []}
+          network={activeNetwork}
+          address={address}
+        />
       </div>
     </div>
   );
