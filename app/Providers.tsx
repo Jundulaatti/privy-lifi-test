@@ -21,7 +21,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           showWalletLoginFirst: true,
         },
         embeddedWallets: {
-          createOnLogin: "users-without-wallets",
+          createOnLogin: "all-users",
         },
       }}
     >
